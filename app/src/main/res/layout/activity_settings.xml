@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Widget Recipie"
+        android:padding="16dp"
+        android:fontFamily="sans-serif-smallcaps"
+        android:textSize="18sp"
+        android:textColor="@color/colorBlack"/>
+
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <RadioButton
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Nutella Pie"
+            android:id="@+id/nutella_pie_radio_button"
+            android:layout_marginBottom="8dp"/>
+
+        <RadioButton
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Brownies"
+            android:id="@+id/brownies_radio_button"
+            android:layout_marginBottom="8dp"/>
+
+        <RadioButton
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Yellow Cake"
+            android:id="@+id/yellow_cake_radio_button"
+            android:layout_marginBottom="8dp"/>
+
+        <RadioButton
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cheesecake"
+            android:id="@+id/cheesecake_radio_button"
+            android:layout_marginBottom="8dp"/>
+
+    </RadioGroup>
+
+</LinearLayout>
