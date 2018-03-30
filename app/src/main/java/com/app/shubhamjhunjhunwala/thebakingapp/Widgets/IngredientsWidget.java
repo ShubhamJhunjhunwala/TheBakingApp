@@ -34,6 +34,7 @@ import org.parceler.Parcels;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -47,6 +48,18 @@ public class IngredientsWidget extends AppWidgetProvider {
 
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
 
+        FetchAsync fetchAsync = new FetchAsync(context, appWidgetManager, appWidgetIds);
+
+        String data = null;
+
+        try {
+            data = fetchAsync.execute().get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
         for (int i = 0; i < appWidgetIds.length; ++i) {
 
             Intent intent = new Intent(context, IngredientsWidgetService.class);
@@ -54,6 +67,8 @@ public class IngredientsWidget extends AppWidgetProvider {
             intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetIds[i]);
 
             intent.setData(Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME)));
+
+            intent.putExtra("FetchedData", data);
 
             RemoteViews rv = new RemoteViews(context.getPackageName(), R.layout.ingredients_widget);
 

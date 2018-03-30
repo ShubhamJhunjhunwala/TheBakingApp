@@ -44,48 +44,6 @@ public class WidgetDataProvider implements RemoteViewsService.RemoteViewsFactory
     public WidgetDataProvider(Context context,Intent intent) {
         this.context = context;
         this.intent = intent;
-
-        final Handler handler = new Handler();
-        Timer timer = new Timer();
-        TimerTask doAsynchronousTask = new TimerTask() {
-            @Override
-            public void run() {
-                handler.post(new Runnable() {
-                    public void run() {
-                        try {
-                            AsyncTask asyncTask = new AsyncTask() {
-                                public String data;
-
-                                @Override
-                                protected Object doInBackground(Object[] objects) {
-                                    try {
-                                        data = JSONUtils.getResponseFromHTTPUrl(context);
-                                        dishes = new JSONUtils().getJSONResponceFromURL(data);
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                    }
-                                    return dishes;
-                                }
-
-                                @Override
-                                protected void onPostExecute(Object o) {
-                                    super.onPostExecute(o);
-
-                                    AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-                                    appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetManager.getAppWidgetIds(new ComponentName(context, IngredientsWidget.class)), R.id.list_view);
-                                }
-                            };
-
-                            asyncTask.execute();
-                        } catch (Exception ignored) {}
-                    }
-                });
-            }
-        };
-
-        timer.schedule(doAsynchronousTask, 0, 60000);
     }
 
     @Override
@@ -95,22 +53,19 @@ public class WidgetDataProvider implements RemoteViewsService.RemoteViewsFactory
 
     @Override
     public void onDataSetChanged() {
-        if (dishes == null) {
-            try {
-                dishes = new JSONUtils().getJSONResponce(context);
-                Log.d("WidgetDataProvider", "Loading Data from Local File");
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-            Log.d("Ingredients Widget PRVD", new Gson().toJson(dishes));
-
-            SharedPreferences sharedPreferences = context.getSharedPreferences("Widget Dish Ingredients", MODE_PRIVATE);
-
-            dishID = sharedPreferences.getInt("Dish ID", 1);
-
-            dish = dishes.get(dishID - 1);
+        try {
+            dishes = new JSONUtils().getJSONResponceFromURL(intent.getStringExtra("FetchedData"));
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
+
+        Log.d("Ingredients Widget PRVD", new Gson().toJson(dishes));
+
+        SharedPreferences sharedPreferences = context.getSharedPreferences("Widget Dish Ingredients", MODE_PRIVATE);
+
+        dishID = sharedPreferences.getInt("Dish ID", 1);
+
+        dish = dishes.get(dishID - 1);
     }
 
     @Override
@@ -119,32 +74,22 @@ public class WidgetDataProvider implements RemoteViewsService.RemoteViewsFactory
 
     @Override
     public int getCount() {
-        if (dish != null) {
-            return dish.getIngredients().length;
-        }
-
-        return 0;
+        return dish.getIngredients().length;
     }
 
     @Override
     public RemoteViews getViewAt(int i) {
-        if (dish != null) {
+        RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.widget_ingredients_list_item);
 
-            RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.widget_ingredients_list_item);
+        String data = dish.getIngredients()[i].getQuantity()
+                + " "
+                + dish.getIngredients()[i].getMeasurement()
+                + " "
+                + dish.getIngredients()[i].getIngredient();
 
-            String data = dish.getIngredients()[i].getQuantity()
-                    + " "
-                    + dish.getIngredients()[i].getMeasurement()
-                    + " "
-                    + dish.getIngredients()[i].getIngredient();
+        remoteViews.setTextViewText(R.id.item, data);
 
-            remoteViews.setTextViewText(R.id.item, data);
-
-            return remoteViews;
-
-        } else {
-            return null;
-        }
+        return remoteViews;
     }
 
     @Override
