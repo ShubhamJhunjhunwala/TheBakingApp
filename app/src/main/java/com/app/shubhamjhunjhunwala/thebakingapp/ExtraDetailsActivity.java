@@ -82,7 +82,27 @@ public class ExtraDetailsActivity extends AppCompatActivity {
         nextTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                stepID++;
+
                 if (stepID < dish.getSteps().length) {
+
+                    ExtraDetailsFragment detailsFragment = new ExtraDetailsFragment();
+                    detailsFragment.dish = dish;
+                    detailsFragment.stepID = stepID;
+
+                    FragmentManager fragmentManager = getSupportFragmentManager();
+
+                    fragmentManager.beginTransaction()
+                            .replace(R.id.extra_details_frame_layout, detailsFragment)
+                            .commit();
+
+                    setTitle("Step " + (stepID + 1));
+
+                } else {
+                    stepID--;
+                }
+
+                /*if (stepID < dish.getSteps().length) {
                     stepID++;
 
                     ExtraDetailsFragment detailsFragment = new ExtraDetailsFragment();
@@ -96,7 +116,7 @@ public class ExtraDetailsActivity extends AppCompatActivity {
                             .commit();
 
                     setTitle("Step " + (stepID + 1));
-                }
+                }*/
             }
         });
     }

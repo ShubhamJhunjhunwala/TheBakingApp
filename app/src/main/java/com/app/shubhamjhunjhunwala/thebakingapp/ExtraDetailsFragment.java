@@ -57,6 +57,9 @@ public class ExtraDetailsFragment extends Fragment {
 
     public SimpleExoPlayerView playerView;
     public SimpleExoPlayer player;
+    public long playerPosition;
+    public boolean playWhenReady;
+    public int currentWindow;
 
     public TextView textView;
 
@@ -74,6 +77,11 @@ public class ExtraDetailsFragment extends Fragment {
             dish =  Parcels.unwrap(savedInstanceState.getParcelable("Dish"));
             stepID = savedInstanceState.getInt("ID");
             twoPaneLayout = savedInstanceState.getBoolean("TwoPane");
+
+            playerPosition = savedInstanceState.getLong("PlayerPosition", 0);
+            playWhenReady = savedInstanceState.getBoolean("PlayWhenReady", true);
+            currentWindow = savedInstanceState.getInt("CurrentWindow", 0);
+            Log.d("Player Position", Long.toString(playerPosition));
         }
 
         Log.d("Details Fragment", dish.toString());
@@ -94,6 +102,9 @@ public class ExtraDetailsFragment extends Fragment {
         outState.putParcelable("Dish", Parcels.wrap(dish));
         outState.putInt("ID", stepID);
         outState.putBoolean("TwoPane", twoPaneLayout);
+        outState.putLong("PlayerPosition", playerPosition);
+        outState.putBoolean("PlayWhenReady", playWhenReady);
+        outState.putInt("CurrentWindow", currentWindow);
     }
 
     @Override
@@ -107,10 +118,10 @@ public class ExtraDetailsFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE && !twoPaneLayout && !hasShownVideoInFullScreen) {
+        /*if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE && !twoPaneLayout && !hasShownVideoInFullScreen) {
             hasShownVideoInFullScreen = true;
             playVideoInFullScreen();
-        }
+        }*/
         if ((Util.SDK_INT <= 23 || player == null)) {
             initializePlayer();
         }
@@ -142,15 +153,12 @@ public class ExtraDetailsFragment extends Fragment {
         videoURL = steps[stepID].getVideoURL();
         imageURL = steps[stepID].getImageURL();
 
-        if (!videoURL.equals("") || (!imageURL.equals("") && imageURL.substring(imageURL.length() - 4).equals(".mp4"))) {
-            if (!imageURL.equals("")) {
-                videoURL = imageURL;
-            }
+        if (!videoURL.equals("")) {
             Uri uri = Uri.parse(videoURL);
-            player.setPlayWhenReady(true);
-            player.seekTo(0, 0);
             MediaSource mediaSource = buildMediaSource(uri);
-            player.prepare(mediaSource, true, false);
+            player.prepare(mediaSource);
+            player.seekTo(currentWindow, playerPosition);
+            player.setPlayWhenReady(true);
         } else if (videoURL.equals("") && !imageURL.equals("")) {
             final String finalImageURL = imageURL;
             new AsyncTask<Void, Void, Void>() {
@@ -168,8 +176,12 @@ public class ExtraDetailsFragment extends Fragment {
                 @Override
                 protected void onPostExecute(Void aVoid) {
                     super.onPostExecute(aVoid);
-
-                    playerView.setDefaultArtwork(bitmap);
+                    if (bitmap != null) {
+                        playerView.setDefaultArtwork(bitmap);
+                    } else {
+                        playerView.setVisibility(View.GONE);
+                        Toast.makeText(getContext(), "No Video Available", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }.execute();
         } else {
@@ -186,6 +198,9 @@ public class ExtraDetailsFragment extends Fragment {
 
     private void releasePlayer() {
         if (player != null) {
+            playerPosition = player.getCurrentPosition();
+            playWhenReady = player.getPlayWhenReady();
+            currentWindow = player.getCurrentWindowIndex();
             player.release();
             player = null;
         }
@@ -193,5 +208,11 @@ public class ExtraDetailsFragment extends Fragment {
 
     private MediaSource buildMediaSource(Uri uri) {
         return new ExtractorMediaSource.Factory(new DefaultHttpDataSourceFactory("exoplayer")).createMediaSource(uri);
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        setRetainInstance(true);
     }
 }

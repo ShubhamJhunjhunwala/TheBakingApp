@@ -78,10 +78,12 @@ public class MasterListFragment extends Fragment implements MasterListAdapter.On
                 protected void onPostExecute(Object o) {
                     super.onPostExecute(o);
 
-                    try {
-                        dishes = new JSONUtils().getJSONResponceFromURL(data);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+                    if (data != null) {
+                        try {
+                            dishes = new JSONUtils().getJSONResponceFromURL(data);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                     }
 
                     if (dishes != null) {

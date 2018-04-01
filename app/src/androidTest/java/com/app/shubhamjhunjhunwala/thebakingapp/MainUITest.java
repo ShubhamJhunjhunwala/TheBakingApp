@@ -47,7 +47,7 @@ public class MainUITest {
         onView(ViewMatchers.withId(R.id.dishes_recycler_view)).perform(RecyclerViewActions.actionOnItemAtPosition(0,click()));
         onView(withId(R.id.ingredients_list_view)).check(matches(isDisplayed()));
 
-        onData(anything()).inAdapterView(withId(R.id.steps_list_view)).atPosition(0).perform(click());
+        onView(ViewMatchers.withId(R.id.steps_list_view)).perform(RecyclerViewActions.actionOnItemAtPosition(0,click()));
         onView(withId(R.id.video_view)).check(matches(isDisplayed()));
 
         onView(ViewMatchers.withId(R.id.next_button)).perform(click());
