@@ -55,11 +55,12 @@ public class ExtraDetailsFragment extends Fragment {
 
     public String videoURL;
 
-    public SimpleExoPlayerView playerView;
-    public SimpleExoPlayer player;
-    public long playerPosition;
-    public boolean playWhenReady;
-    public int currentWindow;
+    public static SimpleExoPlayerView playerView;
+    public static SimpleExoPlayer player;
+    public static long playerPosition;
+    public static int playerPositionForStepID;
+    public static boolean playWhenReady;
+    public static int currentWindow;
 
     public TextView textView;
 
@@ -81,7 +82,14 @@ public class ExtraDetailsFragment extends Fragment {
             playerPosition = savedInstanceState.getLong("PlayerPosition", 0);
             playWhenReady = savedInstanceState.getBoolean("PlayWhenReady", true);
             currentWindow = savedInstanceState.getInt("CurrentWindow", 0);
+            playerPositionForStepID = savedInstanceState.getInt("PlayerPositionForStepID");
             Log.d("Player Position", Long.toString(playerPosition));
+        } else {
+            playWhenReady = true;
+        }
+
+        if (playerPositionForStepID != stepID) {
+            playerPosition = 0;
         }
 
         Log.d("Details Fragment", dish.toString());
@@ -102,9 +110,20 @@ public class ExtraDetailsFragment extends Fragment {
         outState.putParcelable("Dish", Parcels.wrap(dish));
         outState.putInt("ID", stepID);
         outState.putBoolean("TwoPane", twoPaneLayout);
+
+        if (player != null) {
+            playerPosition = player.getCurrentPosition();
+            playWhenReady = player.getPlayWhenReady();
+            currentWindow = player.getCurrentWindowIndex();
+            playerPositionForStepID = stepID;
+        }
+
+        Log.d("Player Position at SIS", Long.toString(playerPosition));
+
         outState.putLong("PlayerPosition", playerPosition);
         outState.putBoolean("PlayWhenReady", playWhenReady);
         outState.putInt("CurrentWindow", currentWindow);
+        outState.putInt("PlayerPositionForStepID", playerPositionForStepID);
     }
 
     @Override
@@ -130,9 +149,6 @@ public class ExtraDetailsFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        if (Util.SDK_INT <= 23) {
-            releasePlayer();
-        }
     }
 
     @Override
@@ -157,8 +173,9 @@ public class ExtraDetailsFragment extends Fragment {
             Uri uri = Uri.parse(videoURL);
             MediaSource mediaSource = buildMediaSource(uri);
             player.prepare(mediaSource);
+            Log.d("Player Position at init", Long.toString(playerPosition));
             player.seekTo(currentWindow, playerPosition);
-            player.setPlayWhenReady(true);
+            player.setPlayWhenReady(playWhenReady);
         } else if (videoURL.equals("") && !imageURL.equals("")) {
             final String finalImageURL = imageURL;
             new AsyncTask<Void, Void, Void>() {
@@ -198,9 +215,6 @@ public class ExtraDetailsFragment extends Fragment {
 
     private void releasePlayer() {
         if (player != null) {
-            playerPosition = player.getCurrentPosition();
-            playWhenReady = player.getPlayWhenReady();
-            currentWindow = player.getCurrentWindowIndex();
             player.release();
             player = null;
         }
@@ -208,11 +222,5 @@ public class ExtraDetailsFragment extends Fragment {
 
     private MediaSource buildMediaSource(Uri uri) {
         return new ExtractorMediaSource.Factory(new DefaultHttpDataSourceFactory("exoplayer")).createMediaSource(uri);
-    }
-
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        setRetainInstance(true);
     }
 }
