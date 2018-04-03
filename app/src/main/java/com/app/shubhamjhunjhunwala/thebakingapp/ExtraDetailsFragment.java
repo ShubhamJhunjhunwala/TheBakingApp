@@ -55,8 +55,8 @@ public class ExtraDetailsFragment extends Fragment {
 
     public String videoURL;
 
-    public static SimpleExoPlayerView playerView;
-    public static SimpleExoPlayer player;
+    public SimpleExoPlayerView playerView;
+    public SimpleExoPlayer player;
     public static long playerPosition;
     public static int playerPositionForStepID;
     public static boolean playWhenReady;
