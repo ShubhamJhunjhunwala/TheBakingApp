@@ -83,6 +83,7 @@ public class ExtraDetailsFragment extends Fragment {
             playWhenReady = savedInstanceState.getBoolean("PlayWhenReady", true);
             currentWindow = savedInstanceState.getInt("CurrentWindow", 0);
             playerPositionForStepID = savedInstanceState.getInt("PlayerPositionForStepID");
+
             Log.d("Player Position", Long.toString(playerPosition));
         } else {
             playWhenReady = true;
